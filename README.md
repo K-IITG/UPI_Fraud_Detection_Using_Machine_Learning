@@ -1,4 +1,4 @@
-![UPI Fraud Detection System Cover](docs/images/cover.jpg)
+![UPI Fraud Detection System Cover](upi-project.jpg)
 
 # UPI Fraud Detection System
 
