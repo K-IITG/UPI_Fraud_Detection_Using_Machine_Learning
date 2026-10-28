@@ -18,7 +18,7 @@ torch-geometric==2.3.1
 # Advanced ML Models
 xgboost==1.7.6
 lightgbm==4.0.0
-catboost==1.2.2
+catboost==1.2.7
 
 # GANs and Synthetic Data
 ctgan==0.7.0
