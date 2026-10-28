@@ -1,3 +1,6 @@
+# CPU-only PyTorch index — must remain at the top
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 # Core ML and Data Processing
 numpy==1.26.4
 pandas==2.2.3
@@ -6,9 +9,9 @@ xgboost==2.1.1
 lightgbm==4.5.0
 catboost==1.2.7
 
-# Deep Learning
-torch==2.5.1
-torchvision==0.20.1
+# Deep Learning — CPU only
+torch==2.3.1+cpu
+torchvision==0.18.1+cpu
 transformers==4.46.3
 tensorflow==2.16.2
 
