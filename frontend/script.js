@@ -196,11 +196,18 @@ class FraudDetectionApp {
         const amount = document.getElementById('amount').value;
         const merchant = document.getElementById('merchant').value;
         const location = document.getElementById('location').value;
+        const upiId = document.getElementById('upiId').value;
+        const merchantCategory = document.getElementById('merchantCategory').value;
+        const deviceId = document.getElementById('deviceId').value;
+        const ipAddress = document.getElementById('ipAddress').value;
+        const latitude = parseFloat(document.getElementById('latitude').value);
+        const longitude = parseFloat(document.getElementById('longitude').value);
+        const paymentMethod = document.getElementById('paymentMethod').value;
 
-        if (!transactionId || !amount || !merchant || !location) {
-            this.showToast('Please fill in all fields', 'warning');
-            return;
-        }
+        if (!transactionId || !amount || !merchant || !location || !upiId || !deviceId || !ipAddress || isNaN(latitude) || isNaN(longitude)) {
+    this.showToast('Please fill in all fields', 'warning');
+    return;
+}
 
         try {
             this.showLoading();
