@@ -198,26 +198,71 @@
                     </div>
 
                     <div class="transaction-form">
-                        <div class="form-group">
-                            <label for="transactionId">Transaction ID</label>
-                            <input type="text" id="transactionId" placeholder="Enter transaction ID">
-                        </div>
-                        <div class="form-group">
-                            <label for="amount">Amount (₹)</label>
-                            <input type="number" id="amount" placeholder="Enter amount">
-                        </div>
-                        <div class="form-group">
-                            <label for="merchant">Merchant</label>
-                            <input type="text" id="merchant" placeholder="Enter merchant name">
-                        </div>
-                        <div class="form-group">
-                            <label for="location">Location</label>
-                            <input type="text" id="location" placeholder="Enter location">
-                        </div>
-                        <button class="btn btn-primary" id="checkForFraudBtn">
-                            <i class="fas fa-shield-alt"></i> Check for Fraud
-                        </button>
-                    </div>
+    <div class="form-group">
+        <label for="transactionId">Transaction ID</label>
+        <input type="text" id="transactionId" placeholder="Enter transaction ID">
+    </div>
+
+    <div class="form-group">
+        <label for="amount">Amount (₹)</label>
+        <input type="number" id="amount" placeholder="Enter amount">
+    </div>
+
+    <div class="form-group">
+        <label for="merchant">Merchant ID</label>
+        <input type="text" id="merchant" placeholder="Enter merchant ID">
+    </div>
+
+    <div class="form-group">
+        <label for="upiId">UPI ID</label>
+        <input type="text" id="upiId" placeholder="Enter UPI ID">
+    </div>
+
+    <div class="form-group">
+        <label for="merchantCategory">Merchant Category</label>
+        <select id="merchantCategory">
+            <option value="ecommerce">E-commerce</option>
+            <option value="food">Food</option>
+            <option value="travel">Travel</option>
+            <option value="utilities">Utilities</option>
+            <option value="shopping">Shopping</option>
+            <option value="other">Other</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="deviceId">Device ID</label>
+        <input type="text" id="deviceId" placeholder="Enter device ID">
+    </div>
+
+    <div class="form-group">
+        <label for="ipAddress">IP Address</label>
+        <input type="text" id="ipAddress" placeholder="Enter IP address">
+    </div>
+
+    <div class="form-group">
+        <label for="latitude">Latitude</label>
+        <input type="number" id="latitude" step="any" placeholder="Enter latitude">
+    </div>
+
+    <div class="form-group">
+        <label for="longitude">Longitude</label>
+        <input type="number" id="longitude" step="any" placeholder="Enter longitude">
+    </div>
+
+    <div class="form-group">
+        <label for="paymentMethod">Payment Method</label>
+        <select id="paymentMethod">
+            <option value="UPI">UPI</option>
+            <option value="CARD">Card</option>
+            <option value="WALLET">Wallet</option>
+        </select>
+    </div>
+
+    <button class="btn btn-primary" id="checkForFraudBtn">
+        <i class="fas fa-shield-alt"></i> Check for Fraud
+    </button>
+</div>
 
                     <div class="analysis-result" id="analysisResult" style="display: none;">
                         <!-- Analysis results will be shown here -->
