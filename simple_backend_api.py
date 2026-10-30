@@ -336,19 +336,15 @@ async def get_threat_intelligence():
     }
 
 if __name__ == "__main__":
+    import os
     import uvicorn
-    print("🚀 Starting UPI Fraud Detection Backend API...")
-    print("📊 API Documentation: http://localhost:8000/docs")
-    print("🌐 Frontend: http://localhost:3000")
-    print("🔗 API Base URL: http://localhost:8000")
-    print("\n" + "="*60)
-    print("✅ Backend API is ready!")
-    print("="*60)
-    
+
+    port = int(os.getenv("PORT", 8000))
+
     uvicorn.run(
-        "simple_backend_api:app", 
-        host="0.0.0.0", 
-        port=8000,
-        reload=True,
+        "simple_backend_api:app",
+        host="0.0.0.0",
+        port=port,
+        reload=False,
         log_level="info"
     )
