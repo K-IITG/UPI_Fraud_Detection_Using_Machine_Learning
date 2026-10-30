@@ -1,7 +1,7 @@
 // UPI Fraud Detection Frontend JavaScript
 class FraudDetectionApp {
     constructor() {
-        this.apiBaseUrl = 'http://localhost:8000';
+        this.apiBaseUrl = 'https://upi-fraud-quickstart-api-1.onrender.com';
         this.autoRefreshInterval = null;
         this.isAutoRefresh = false;
         this.chart = null;
