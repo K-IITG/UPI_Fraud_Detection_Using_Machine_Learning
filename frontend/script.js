@@ -192,23 +192,25 @@ class FraudDetectionApp {
     }
 
     async submitTransaction() {
-        const transactionId = document.getElementById('transactionId').value;
-        const amount = document.getElementById('amount').value;
-        const merchant = document.getElementById('merchant').value;
-        const upiId = document.getElementById('upiId').value;
-        const merchantCategory = document.getElementById('merchantCategory').value;
-        const deviceId = document.getElementById('deviceId').value;
-        const ipAddress = document.getElementById('ipAddress').value;
-        const latitude = parseFloat(document.getElementById('latitude').value);
-        const longitude = parseFloat(document.getElementById('longitude').value);
-        const paymentMethod = document.getElementById('paymentMethod').value;
-        
-        
+    const transactionId = document.getElementById('transactionId').value;
+    const amount = document.getElementById('amount').value;
+    const merchant = document.getElementById('merchant').value;
+    const upiId = document.getElementById('upiId').value;
+    const merchantCategory = document.getElementById('merchantCategory').value;
+    const deviceId = document.getElementById('deviceId').value;
+    const ipAddress = document.getElementById('ipAddress').value;
+    const latitude = parseFloat(document.getElementById('latitude').value);
+    const longitude = parseFloat(document.getElementById('longitude').value);
+    const paymentMethod = document.getElementById('paymentMethod').value;
 
-       if (!transactionId || !amount || !merchant || !upiId || !deviceId || !ipAddress || isNaN(latitude) || isNaN(longitude)) {
-           this.showToast('Please fill in all fields', 'warning');
-           return;
-       }
+    if (!transactionId || !amount || !merchant || !upiId || !deviceId || !ipAddress || isNaN(latitude) || isNaN(longitude)) {
+        this.showToast('Please fill in all fields', 'warning');
+        return;
+    }
+
+    try {
+        this.showLoading();
+
         const transactionData = {
             transaction_id: transactionId,
             amount: parseFloat(amount),
@@ -218,75 +220,72 @@ class FraudDetectionApp {
             device_id: deviceId,
             ip_address: ipAddress,
             location: {
-            lat: latitude,
-            lon: longitude
+                lat: latitude,
+                lon: longitude
             },
             payment_method: paymentMethod,
             timestamp: new Date().toISOString()
         };
 
-            console.log('Transaction data:', transactionData);
-            
-            const result = await this.analyzeTransaction(transactionData);
-            console.log('Analysis result:', result);
-            this.displayAnalysisResult(result);
-            
-        } catch (error) {
-            this.showToast('Error analyzing transaction', 'error');
-            console.error('Transaction analysis error:', error);
-        } finally {
-            this.hideLoading();
-        }
-    }
+        console.log('Transaction data:', transactionData);
 
-    async analyzeTransaction(transactionData) {
-        try {
-            // Format data according to backend API requirements
-            const apiData = {
-                transaction_id: transactionData.transaction_id,
-                upi_id: "user@upi", // Default value
-                merchant_id: transactionData.merchant,
-                amount: parseFloat(transactionData.amount),
-                hour: new Date().getHours(),
-                device_risk_score: 0.3, // Default value
-                location_risk_score: 0.2, // Default value
-                user_behavior_score: 0.5 // Default value
-            };
-            
-            console.log('Sending data to API:', apiData);
-            
-            // Call backend API using the correct endpoint
-            const response = await fetch(`${this.apiBaseUrl}/predict`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(apiData)
-            });
-            
-            console.log('Response status:', response.status);
-            
-            if (response.ok) {
-                const result = await response.json();
-                console.log('API response:', result);
-                return result;
-            } else {
-                // Log error details for debugging
-                const errorText = await response.text();
-                console.error('API error:', response.status, errorText);
-                
-                // Use fallback mock analysis instead of throwing an error
-                console.log('Using fallback mock analysis');
-                return this.generateMockAnalysis(transactionData);
-            }
-        } catch (error) {
-            console.error('Transaction analysis error:', error);
-            this.showToast('Error connecting to backend API', 'error');
-            
-            // Fallback to mock analysis
-            return this.generateMockAnalysis(transactionData);
-        }
+        const result = await this.analyzeTransaction(transactionData);
+        console.log('Analysis result:', result);
+        this.displayAnalysisResult(result);
+    } catch (error) {
+        this.showToast('Error analyzing transaction', 'error');
+        console.error('Transaction analysis error:', error);
+    } finally {
+        this.hideLoading();
     }
+}
+    async analyzeTransaction(transactionData) {
+    try {
+        const apiData = {
+            transaction_id: transactionData.transaction_id,
+            upi_id: transactionData.upi_id,
+            amount: transactionData.amount,
+            merchant_id: transactionData.merchant_id,
+            merchant_category: transactionData.merchant_category,
+            device_id: transactionData.device_id,
+            ip_address: transactionData.ip_address,
+            location: transactionData.location,
+            timestamp: transactionData.timestamp,
+            payment_method: transactionData.payment_method,
+            session_id: 'SESSION-' + Date.now(),
+            user_agent: navigator.userAgent,
+            sms_content: '',
+            merchant_notes: ''
+        };
+
+        console.log('Sending data to API:', apiData);
+
+        const response = await fetch(`${this.apiBaseUrl}/predict`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(apiData)
+        });
+
+        console.log('Response status:', response.status);
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log('API response:', result);
+            return result;
+        }
+
+        const errorText = await response.text();
+        console.error('API error:', response.status, errorText);
+        this.showToast(`API error: ${response.status}`, 'error');
+        return this.generateMockAnalysis(transactionData);
+    } catch (error) {
+        console.error('Transaction analysis error:', error);
+        this.showToast('Error connecting to backend API', 'error');
+        return this.generateMockAnalysis(transactionData);
+    }
+}
     
     generateMockAnalysis(transactionData) {
         return new Promise((resolve) => {
@@ -685,12 +684,12 @@ window.addEventListener('resize', () => {
 });
 
 // Initialize the app
-const app = new FraudDetectionApp();
+//const app = new FraudDetectionApp();
 
 // Make app available globally for HTML onclick handlers if needed
-window.app = app;
+//window.app = app;
 
 // For module exports compatibility
-if (typeof module !== 'undefined' && module.exports) {
+//if (typeof module !== 'undefined' && module.exports) {
     module.exports = FraudDetectionApp;
-}
+//}
