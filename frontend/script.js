@@ -195,7 +195,6 @@ class FraudDetectionApp {
         const transactionId = document.getElementById('transactionId').value;
         const amount = document.getElementById('amount').value;
         const merchant = document.getElementById('merchant').value;
-        const location = document.getElementById('location').value;
         const upiId = document.getElementById('upiId').value;
         const merchantCategory = document.getElementById('merchantCategory').value;
         const deviceId = document.getElementById('deviceId').value;
@@ -203,22 +202,28 @@ class FraudDetectionApp {
         const latitude = parseFloat(document.getElementById('latitude').value);
         const longitude = parseFloat(document.getElementById('longitude').value);
         const paymentMethod = document.getElementById('paymentMethod').value;
+        
+        
 
-        if (!transactionId || !amount || !merchant || !location || !upiId || !deviceId || !ipAddress || isNaN(latitude) || isNaN(longitude)) {
-    this.showToast('Please fill in all fields', 'warning');
-    return;
-}
-
-        try {
-            this.showLoading();
-            
-            const transactionData = {
-                transaction_id: transactionId,
-                amount: parseFloat(amount),
-                merchant: merchant,
-                location: location,
-                timestamp: new Date().toISOString()
-            };
+       if (!transactionId || !amount || !merchant || !upiId || !deviceId || !ipAddress || isNaN(latitude) || isNaN(longitude)) {
+           this.showToast('Please fill in all fields', 'warning');
+           return;
+       }
+        const transactionData = {
+            transaction_id: transactionId,
+            amount: parseFloat(amount),
+            merchant_id: merchant,
+            upi_id: upiId,
+            merchant_category: merchantCategory,
+            device_id: deviceId,
+            ip_address: ipAddress,
+            location: {
+            lat: latitude,
+            lon: longitude
+            },
+            payment_method: paymentMethod,
+            timestamp: new Date().toISOString()
+        };
 
             console.log('Transaction data:', transactionData);
             
