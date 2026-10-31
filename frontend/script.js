@@ -40,7 +40,7 @@ class FraudDetectionApp {
         document.getElementById('checkForFraudBtn')?.addEventListener('click', () => {
             this.submitTransaction();
         });
-        
+
         // Analyze Transaction button
         document.getElementById('analyzeTransactionBtn')?.addEventListener('click', () => {
             this.analyzeCurrentTransaction();
@@ -48,18 +48,15 @@ class FraudDetectionApp {
     }
 
     showSection(sectionId) {
-        // Hide all sections
         document.querySelectorAll('.content-section').forEach(section => {
             section.classList.remove('active');
         });
 
-        // Show selected section
         const targetSection = document.getElementById(sectionId);
         if (targetSection) {
             targetSection.classList.add('active');
             targetSection.classList.add('fade-in');
 
-            // Load section-specific data
             switch (sectionId) {
                 case 'dashboard':
                     this.loadDashboard();
@@ -90,12 +87,10 @@ class FraudDetectionApp {
     async loadDashboard() {
         try {
             this.showLoading();
-            
-            // Simulate API calls for dashboard data
+
             const dashboardData = await this.fetchDashboardData();
             this.updateDashboardMetrics(dashboardData);
             this.updateTransactionsList(dashboardData.transactions);
-            
         } catch (error) {
             this.showToast('Error loading dashboard data', 'error');
             console.error('Dashboard load error:', error);
@@ -106,13 +101,15 @@ class FraudDetectionApp {
 
     async fetchDashboardData() {
         try {
-            // Try to fetch from backend API
             const response = await fetch(`${this.apiBaseUrl}/api/dashboard/metrics`);
+
             if (response.ok) {
                 const metrics = await response.json();
                 const transactionsResponse = await fetch(`${this.apiBaseUrl}/api/transactions?limit=10`);
-                const transactions = transactionsResponse.ok ? await transactionsResponse.json() : this.generateMockTransactions(10);
-                
+                const transactions = transactionsResponse.ok
+                    ? await transactionsResponse.json()
+                    : this.generateMockTransactions(10);
+
                 return {
                     transactionVolume: metrics.transaction_volume,
                     fraudRate: metrics.fraud_rate,
@@ -126,8 +123,7 @@ class FraudDetectionApp {
         } catch (error) {
             console.log('Backend not available, using mock data');
         }
-        
-        // Fallback to mock data
+
         return {
             transactionVolume: Math.floor(Math.random() * 10000) + 5000,
             fraudRate: (Math.random() * 0.1).toFixed(3) + '%',
@@ -191,108 +187,114 @@ class FraudDetectionApp {
         `).join('');
     }
 
-    async submitTransaction() {
-    const transactionId = document.getElementById('transactionId').value;
-    const amount = document.getElementById('amount').value;
-    const merchant = document.getElementById('merchant').value;
-    const upiId = document.getElementById('upiId').value;
-    const merchantCategory = document.getElementById('merchantCategory').value;
-    const deviceId = document.getElementById('deviceId').value;
-    const ipAddress = document.getElementById('ipAddress').value;
-    const latitude = parseFloat(document.getElementById('latitude').value);
-    const longitude = parseFloat(document.getElementById('longitude').value);
-    const paymentMethod = document.getElementById('paymentMethod').value;
-
-    if (!transactionId || !amount || !merchant || !upiId || !deviceId || !ipAddress || isNaN(latitude) || isNaN(longitude)) {
-        this.showToast('Please fill in all fields', 'warning');
-        return;
-    }
-
-    try {
-        this.showLoading();
-
-        const transactionData = {
-            transaction_id: transactionId,
-            amount: parseFloat(amount),
-            merchant_id: merchant,
-            upi_id: upiId,
-            merchant_category: merchantCategory,
-            device_id: deviceId,
-            ip_address: ipAddress,
+    getAutomaticTransactionDetails() {
+        return {
+            device_id: 'DEVICE-' + Math.random().toString(36).substring(2, 10).toUpperCase(),
+            ip_address: '192.168.' + Math.floor(Math.random() * 255) + '.' + Math.floor(Math.random() * 255),
             location: {
-                lat: latitude,
-                lon: longitude
-            },
-            payment_method: paymentMethod,
-            timestamp: new Date().toISOString()
+                lat: 19.076 + (Math.random() - 0.5) * 0.1,
+                lon: 72.8777 + (Math.random() - 0.5) * 0.1
+            }
         };
-
-        console.log('Transaction data:', transactionData);
-
-        const result = await this.analyzeTransaction(transactionData);
-        console.log('Analysis result:', result);
-        this.displayAnalysisResult(result);
-    } catch (error) {
-        this.showToast('Error analyzing transaction', 'error');
-        console.error('Transaction analysis error:', error);
-    } finally {
-        this.hideLoading();
     }
-}
-    async analyzeTransaction(transactionData) {
-    try {
-        const apiData = {
-            transaction_id: transactionData.transaction_id,
-            upi_id: transactionData.upi_id,
-            amount: transactionData.amount,
-            merchant_id: transactionData.merchant_id,
-            merchant_category: transactionData.merchant_category,
-            device_id: transactionData.device_id,
-            ip_address: transactionData.ip_address,
-            location: transactionData.location,
-            timestamp: transactionData.timestamp,
-            payment_method: transactionData.payment_method,
-            session_id: 'SESSION-' + Date.now(),
-            user_agent: navigator.userAgent,
-            sms_content: '',
-            merchant_notes: ''
-        };
 
-        console.log('Sending data to API:', apiData);
+    async submitTransaction() {
+        const transactionId = document.getElementById('transactionId').value;
+        const amount = document.getElementById('amount').value;
+        const merchant = document.getElementById('merchant').value;
+        const upiId = document.getElementById('upiId').value;
+        const merchantCategory = document.getElementById('merchantCategory').value;
 
-        const response = await fetch(`${this.apiBaseUrl}/predict`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(apiData)
-        });
-
-        console.log('Response status:', response.status);
-
-        if (response.ok) {
-            const result = await response.json();
-            console.log('API response:', result);
-            return result;
+        if (!transactionId || !amount || !merchant || !upiId) {
+            this.showToast('Please fill in all fields', 'warning');
+            return;
         }
 
-        const errorText = await response.text();
-        console.error('API error:', response.status, errorText);
-        this.showToast(`API error: ${response.status}`, 'error');
-        return this.generateMockAnalysis(transactionData);
-    } catch (error) {
-        console.error('Transaction analysis error:', error);
-        this.showToast('Error connecting to backend API', 'error');
-        return this.generateMockAnalysis(transactionData);
+        try {
+            this.showLoading();
+
+            const automaticDetails = this.getAutomaticTransactionDetails();
+
+            const transactionData = {
+                transaction_id: transactionId,
+                amount: parseFloat(amount),
+                merchant_id: merchant,
+                upi_id: upiId,
+                merchant_category: merchantCategory,
+                device_id: automaticDetails.device_id,
+                ip_address: automaticDetails.ip_address,
+                location: automaticDetails.location,
+                payment_method: 'UPI',
+                timestamp: new Date().toISOString()
+            };
+
+            console.log('Transaction data:', transactionData);
+
+            const result = await this.analyzeTransaction(transactionData);
+            console.log('Analysis result:', result);
+            this.displayAnalysisResult(result);
+        } catch (error) {
+            this.showToast('Error analyzing transaction', 'error');
+            console.error('Transaction analysis error:', error);
+        } finally {
+            this.hideLoading();
+        }
     }
-}
-    
+
+    async analyzeTransaction(transactionData) {
+        try {
+            const apiData = {
+                transaction_id: transactionData.transaction_id,
+                upi_id: transactionData.upi_id,
+                amount: transactionData.amount,
+                merchant_id: transactionData.merchant_id,
+                merchant_category: transactionData.merchant_category,
+                device_id: transactionData.device_id,
+                ip_address: transactionData.ip_address,
+                location: transactionData.location,
+                timestamp: transactionData.timestamp,
+                payment_method: transactionData.payment_method,
+                session_id: 'SESSION-' + Date.now(),
+                user_agent: navigator.userAgent,
+                sms_content: '',
+                merchant_notes: ''
+            };
+
+            console.log('Sending data to API:', apiData);
+
+            const response = await fetch(`${this.apiBaseUrl}/predict`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(apiData)
+            });
+
+            console.log('Response status:', response.status);
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('API response:', result);
+                return result;
+            }
+
+            const errorText = await response.text();
+            console.error('API error:', response.status, errorText);
+            this.showToast(`API error: ${response.status}`, 'error');
+            return this.generateMockAnalysis(transactionData);
+        } catch (error) {
+            console.error('Transaction analysis error:', error);
+            this.showToast('Error connecting to backend API', 'error');
+            return this.generateMockAnalysis(transactionData);
+        }
+    }
+
     generateMockAnalysis(transactionData) {
         return new Promise((resolve) => {
             setTimeout(() => {
                 const riskScore = Math.random();
                 const riskLevel = riskScore > 0.7 ? 'high' : riskScore > 0.4 ? 'medium' : 'low';
-                
+
                 resolve({
                     transaction_id: transactionData.transaction_id,
                     risk_score: riskScore,
@@ -344,16 +346,12 @@ class FraudDetectionApp {
         const container = document.getElementById('analysisResult');
         if (!container) return;
 
-        // Clear any previous error messages
         document.querySelectorAll('.error-message').forEach(el => el.remove());
-        
-        // Map backend response to frontend format
-        // Handle both formats: direct risk_score or risk_score inside risk_factors
+
         const riskScore = result.risk_score || (result.risk_factors ? result.risk_factors.overall_score : 0);
         const riskLevel = result.risk_level || this.getRiskLevelFromScore(riskScore);
         const decision = result.decision || (riskLevel === 'high' ? 'BLOCK' : riskLevel === 'medium' ? 'CHALLENGE' : 'ALLOW');
-        
-        // Create result HTML
+
         container.innerHTML = `
             <div class="result-header ${riskLevel}">
                 <h3>Transaction Analysis Result</h3>
@@ -391,17 +389,16 @@ class FraudDetectionApp {
                 ${result.explanation ? `<div class="explanation"><p><em>${result.explanation}</em></p></div>` : ''}
             </div>
         `;
-        
-        // Show the result container
+
         container.style.display = 'block';
         container.scrollIntoView({ behavior: 'smooth' });
     }
-    
+
     renderRiskFactors(factors) {
         if (!factors || factors.length === 0) {
             return '<p>No risk factors available</p>';
         }
-        
+
         return factors.map(factor => `
             <div class="factor-item ${factor.status}">
                 <div class="factor-name">${factor.name}</div>
@@ -409,25 +406,14 @@ class FraudDetectionApp {
             </div>
         `).join('');
     }
-    
+
     getRiskLevelFromScore(score) {
         if (score >= 0.7) return 'high';
         if (score >= 0.4) return 'medium';
         return 'low';
     }
-    
-    // New method to handle the Analyze Transaction button click
+
     analyzeCurrentTransaction() {
-        const transactionId = document.getElementById('transactionId').value;
-        const amount = document.getElementById('amount').value;
-        const merchant = document.getElementById('merchant').value;
-        const location = document.getElementById('location').value;
-
-        if (!transactionId || !amount || !merchant || !location) {
-            this.showToast('Please fill in all fields', 'warning');
-            return;
-        }
-
         this.submitTransaction();
     }
 
@@ -435,59 +421,51 @@ class FraudDetectionApp {
         const canvas = document.getElementById('fraudChart');
         if (!canvas) return;
 
-        const ctx = canvas.getContext('2d');
-        
-        // Simple chart implementation
+        const ctx = canvas.getContext('2ctx');
         this.drawSimpleChart(ctx, canvas.width, canvas.height);
     }
 
     drawSimpleChart(ctx, width, height) {
-        // Clear canvas
         ctx.clearRect(0, 0, width, height);
-        
-        // Draw axes
+
         ctx.strokeStyle = '#e2e8f0';
         ctx.lineWidth = 1;
-        
-        // Y-axis
+
         ctx.beginPath();
         ctx.moveTo(40, 20);
         ctx.lineTo(40, height - 40);
         ctx.stroke();
-        
-        // X-axis
+
         ctx.beginPath();
         ctx.moveTo(40, height - 40);
         ctx.lineTo(width - 20, height - 40);
         ctx.stroke();
-        
-        // Draw sample data
+
         const data = [20, 35, 25, 45, 30, 55, 40, 60, 35, 50];
         const maxValue = Math.max(...data);
-        
+
         ctx.strokeStyle = '#667eea';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        
+
         data.forEach((value, index) => {
             const x = 40 + (index * (width - 60) / (data.length - 1));
             const y = height - 40 - (value / maxValue) * (height - 60);
-            
+
             if (index === 0) {
                 ctx.moveTo(x, y);
             } else {
                 ctx.lineTo(x, y);
             }
         });
-        
+
         ctx.stroke();
-        
-        // Draw data points
+
         ctx.fillStyle = '#667eea';
         data.forEach((value, index) => {
             const x = 40 + (index * (width - 60) / (data.length - 1));
             const y = height - 40 - (value / maxValue) * (height - 60);
-            
+
             ctx.beginPath();
             ctx.arc(x, y, 4, 0, 2 * Math.PI);
             ctx.fill();
@@ -538,12 +516,10 @@ class FraudDetectionApp {
     }
 
     startRealTimeUpdates() {
-        // Update header stats every 5 seconds
         setInterval(() => {
             this.updateHeaderStats();
         }, 5000);
 
-        // Update transaction list every 10 seconds
         setInterval(() => {
             if (this.isAutoRefresh) {
                 this.loadDashboard();
@@ -554,7 +530,7 @@ class FraudDetectionApp {
     updateHeaderStats() {
         const activeTransactions = Math.floor(Math.random() * 100) + 50;
         const fraudDetected = Math.floor(Math.random() * 10);
-        
+
         document.getElementById('activeTransactions').textContent = activeTransactions;
         document.getElementById('fraudDetected').textContent = fraudDetected;
     }
@@ -563,7 +539,7 @@ class FraudDetectionApp {
         this.isAutoRefresh = !this.isAutoRefresh;
         const icon = document.getElementById('autoRefreshIcon');
         const text = document.getElementById('autoRefreshText');
-        
+
         if (this.isAutoRefresh) {
             icon.className = 'fas fa-pause';
             text.textContent = 'Auto Refresh';
@@ -585,17 +561,14 @@ class FraudDetectionApp {
     }
 
     loadTransactions() {
-        // Load transaction-specific data
         console.log('Loading transactions...');
     }
 
     loadAnalytics() {
-        // Load analytics-specific data
         console.log('Loading analytics...');
     }
 
     loadModels() {
-        // Load model-specific data
         console.log('Loading models...');
     }
 
@@ -628,7 +601,6 @@ class FraudDetectionApp {
 
         container.appendChild(toast);
 
-        // Auto remove after 5 seconds
         setTimeout(() => {
             if (toast.parentElement) {
                 toast.remove();
@@ -665,8 +637,7 @@ function submitTransaction() {
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.fraudApp = new FraudDetectionApp();
-    
-    // Add some initial animations
+
     document.querySelectorAll('.metric-card').forEach((card, index) => {
         card.style.animationDelay = `${index * 0.1}s`;
         card.classList.add('fade-in');
@@ -676,20 +647,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // Handle window resize for responsive chart
 window.addEventListener('resize', () => {
     if (window.fraudApp && window.fraudApp.chart) {
-        // Redraw chart on resize
         setTimeout(() => {
             window.fraudApp.initializeChart();
         }, 100);
     }
 });
-
-// Initialize the app
-//const app = new FraudDetectionApp();
-
-// Make app available globally for HTML onclick handlers if needed
-//window.app = app;
-
-// For module exports compatibility
-//if (typeof module !== 'undefined' && module.exports) {
-    module.exports = FraudDetectionApp;
-//}
