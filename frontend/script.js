@@ -5,6 +5,7 @@ class FraudDetectionApp {
         this.autoRefreshInterval = null;
         this.isAutoRefresh = false;
         this.chart = null;
+        this.lastTransactionResult = null;
         this.init();
     }
 
@@ -17,7 +18,6 @@ class FraudDetectionApp {
     }
 
     setupEventListeners() {
-        // Navigation
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -27,7 +27,6 @@ class FraudDetectionApp {
             });
         });
 
-        // Threshold sliders
         document.getElementById('highRiskThreshold')?.addEventListener('input', (e) => {
             document.querySelector('.threshold-value').textContent = e.target.value;
         });
@@ -36,12 +35,10 @@ class FraudDetectionApp {
             document.querySelectorAll('.threshold-value')[1].textContent = e.target.value;
         });
 
-        // Check for Fraud button
         document.getElementById('checkForFraudBtn')?.addEventListener('click', () => {
             this.submitTransaction();
         });
 
-        // Analyze Transaction button
         document.getElementById('analyzeTransactionBtn')?.addEventListener('click', () => {
             this.analyzeCurrentTransaction();
         });
@@ -231,7 +228,7 @@ class FraudDetectionApp {
             console.log('Transaction data:', transactionData);
 
             const result = await this.analyzeTransaction(transactionData);
-            console.log('Analysis result:', result);
+            this.lastTransactionResult = result;
             this.displayAnalysisResult(result);
         } catch (error) {
             this.showToast('Error analyzing transaction', 'error');
@@ -421,7 +418,7 @@ class FraudDetectionApp {
         const canvas = document.getElementById('fraudChart');
         if (!canvas) return;
 
-        const ctx = canvas.getContext('2ctx');
+        const ctx = canvas.getContext('2d');
         this.drawSimpleChart(ctx, canvas.width, canvas.height);
     }
 
@@ -518,11 +515,15 @@ class FraudDetectionApp {
     startRealTimeUpdates() {
         setInterval(() => {
             this.updateHeaderStats();
-        }, 5000);
 
-        setInterval(() => {
-            if (this.isAutoRefresh) {
-                this.loadDashboard();
+            const activeSection = document.querySelector('.content-section.active');
+
+            if (this.isAutoRefresh && activeSection) {
+                if (activeSection.id === 'dashboard') {
+                    this.loadDashboard();
+                } else if (activeSection.id === 'transactions') {
+                    this.loadTransactions();
+                }
             }
         }, 10000);
     }
@@ -561,7 +562,11 @@ class FraudDetectionApp {
     }
 
     loadTransactions() {
-        console.log('Loading transactions...');
+        console.log('Refreshing transactions...');
+
+        if (this.lastTransactionResult) {
+            this.displayAnalysisResult(this.lastTransactionResult);
+        }
     }
 
     loadAnalytics() {
